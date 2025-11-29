@@ -57,7 +57,7 @@ export default function Home() {
       <div className="px-6 pt-8 pb-4 flex justify-between items-center bg-white sticky top-0 z-10 shadow-sm">
         <div>
           <p className="text-xs text-gray-400 font-medium mb-1">Selamat Datang,</p>
-          <h1 className="text-xl font-bold text-gray-800">{username}! 👋</h1>
+          <h1 className="text-xl font-bold text-gray-800">{username}! </h1>
         </div>
         <Link to="/about" className="w-10 h-10 bg-gray-200 rounded-full overflow-hidden border-2 border-white shadow-sm">
           <img 

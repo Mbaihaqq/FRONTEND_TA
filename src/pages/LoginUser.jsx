@@ -20,7 +20,7 @@ export default function LoginUser() {
     <div className="min-h-screen bg-blue-50 flex flex-col justify-center p-6">
       <div className="bg-white p-6 rounded-2xl shadow-lg">
         <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">Login Mahasiswa 👋</h1>
+          <h1 className="text-2xl font-bold text-gray-800">Login Mahasiswa </h1>
           <p className="text-gray-500 text-sm">Masuk untuk cek status laundry</p>
         </div>
 

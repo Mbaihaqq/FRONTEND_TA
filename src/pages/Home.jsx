@@ -28,7 +28,6 @@ export default function Home() {
     }
   }, []);
 
-  
   const fetchLatestOrder = (currentUserName) => {
     fetch(`${API_BASE_URL}/orders`)
       .then((res) => res.json())
@@ -37,10 +36,8 @@ export default function Home() {
           const myOrders = data.filter(
             (order) => order.user_name && order.user_name.toLowerCase() === currentUserName.toLowerCase()
           );
-
           
           const sortedOrders = myOrders.sort((a, b) => new Date(b.pickup_date) - new Date(a.pickup_date));
-
           
           if (sortedOrders.length > 0) {
             setLatestOrder(sortedOrders[0]);
@@ -51,15 +48,17 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-32">
+    // md:pb-10 artinya padding bawah dikurangi di desktop karena tidak ada navbar bawah
+    <div className="min-h-screen bg-gray-50 pb-32 md:pb-10">
       
-      
-      <div className="px-6 pt-8 pb-4 flex justify-between items-center bg-white sticky top-0 z-10 shadow-sm">
+      {/* 1. Header Section */}
+      {/* md:static md:bg-transparent: Di desktop header tidak sticky dan background transparan */}
+      <div className="px-6 pt-8 pb-4 flex justify-between items-center bg-white sticky top-0 z-10 shadow-sm md:static md:bg-transparent md:shadow-none md:pt-10">
         <div>
           <p className="text-xs text-gray-400 font-medium mb-1">Selamat Datang,</p>
-          <h1 className="text-xl font-bold text-gray-800">{username}! </h1>
+          <h1 className="text-xl font-bold text-gray-800">{username}! 👋</h1>
         </div>
-        <Link to="/about" className="w-10 h-10 bg-gray-200 rounded-full overflow-hidden border-2 border-white shadow-sm">
+        <Link to="/about" className="w-10 h-10 bg-gray-200 rounded-full overflow-hidden border-2 border-white shadow-sm hover:shadow-md transition">
           <img 
             src={`https://api.dicebear.com/7.x/fun-emoji/svg?seed=${username}`} 
             alt="Profile" 
@@ -70,22 +69,26 @@ export default function Home() {
 
       <div className="p-6">
         
-        
-        <div className="relative bg-blue-600 rounded-3xl p-6 text-white shadow-xl shadow-blue-200 overflow-hidden mb-8">
+        {/* 2. Hero Card / Banner */}
+        {/* md:p-10: Padding lebih besar di desktop agar lega */}
+        <div className="relative bg-blue-600 rounded-3xl p-6 md:p-10 text-white shadow-xl shadow-blue-200 overflow-hidden mb-8 transition hover:shadow-blue-300">
           <div className="absolute -top-10 -right-10 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl"></div>
           <div className="absolute bottom-0 left-0 w-24 h-24 bg-blue-400 opacity-20 rounded-full blur-xl"></div>
           <div className="relative z-10">
-            <h2 className="text-xl font-bold mb-1">Cucian Numpuk?</h2>
-            <p className="text-blue-100 text-sm mb-4 max-w-[80%]">Jangan biarkan tugas kuliah terganggu. Biar kami yang cuci!</p>
-            <Link to="/create-order" className="bg-white text-blue-600 text-xs font-bold px-4 py-2 rounded-full shadow-md hover:bg-gray-100 transition">
+            <h2 className="text-xl md:text-3xl font-bold mb-2">Cucian Numpuk?</h2>
+            <p className="text-blue-100 text-sm md:text-base mb-6 max-w-[80%]">Jangan biarkan tugas kuliah terganggu. Biar kami yang cuci!</p>
+            <Link to="/create-order" className="bg-white text-blue-600 text-xs md:text-sm font-bold px-6 py-3 rounded-full shadow-md hover:bg-gray-100 transition transform hover:scale-105 inline-block">
               Order Sekarang
             </Link>
           </div>
         </div>
 
-       
+        {/* 3. Layanan Utama */}
         <h2 className="font-bold text-gray-800 text-lg mb-4 pl-1">Layanan Utama</h2>
-        <div className="grid grid-cols-2 gap-4">
+        
+        {/* GRID RESPONSIF: md:grid-cols-4 artinya jadi 4 kolom di desktop */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          
           <Link to="/create-order" className="group bg-white p-5 rounded-2xl shadow-sm hover:shadow-md transition duration-300 flex flex-col items-center justify-center border border-gray-100">
             <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-3 group-hover:bg-blue-600 group-hover:text-white transition">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
@@ -115,16 +118,15 @@ export default function Home() {
           </Link>
         </div>
 
-        
+        {/* 4. Aktivitas Terkini */}
         <div className="mt-8">
            <div className="flex justify-between items-center mb-4 pl-1">
              <h2 className="font-bold text-gray-800 text-lg">Aktivitas Terkini</h2>
-             <Link to="/orders" className="text-blue-600 text-xs font-semibold">Lihat Semua</Link>
+             <Link to="/orders" className="text-blue-600 text-xs font-semibold hover:underline">Lihat Semua</Link>
            </div>
            
-           
            {latestOrder ? (
-             <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 animate-fade-in">
+             <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 animate-fade-in hover:shadow-md transition">
                <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${getStatusColorClass(latestOrder.status)}`}>
                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                </div>
@@ -139,10 +141,9 @@ export default function Home() {
                </div>
              </div>
            ) : (
-             
              <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-center">
                 <p className="text-gray-400 text-sm">Belum ada aktivitas.</p>
-                <Link to="/create-order" className="text-blue-600 text-xs font-bold mt-2 inline-block">Mulai Laundry</Link>
+                <Link to="/create-order" className="text-blue-600 text-xs font-bold mt-2 inline-block hover:underline">Mulai Laundry</Link>
              </div>
            )}
         </div>

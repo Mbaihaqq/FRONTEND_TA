@@ -8,12 +8,13 @@ export default function CreateOrder() {
   const [userName, setUserName] = useState(""); 
   const [outlets, setOutlets] = useState([]);
   const [selectedOutlet, setSelectedOutlet] = useState("");
-  const [weight, setWeight] = useState("");
+  const [weight, setWeight] = useState(""); // Biarkan string agar bisa kosong
   const [price, setPrice] = useState(0);
   const [loading, setLoading] = useState(false);
 
   const PRICE_PER_KG = 5000;
 
+  // 1. Cek Login & Load Outlet
   useEffect(() => {
     const storedName = localStorage.getItem("user_name");
     const role = localStorage.getItem("role");
@@ -31,40 +32,46 @@ export default function CreateOrder() {
       .catch((err) => console.error(err));
   }, []);
 
+  // 2. Hitung Harga Real-time (Anti Minus di Tampilan)
   useEffect(() => {
-    // Pastikan hitungan harga tidak minus saat diketik
     const w = parseFloat(weight);
-    if (w > 0) {
+    // Jika input valid dan lebih dari 0, hitung harga
+    if (!isNaN(w) && w > 0) {
       setPrice(w * PRICE_PER_KG);
     } else {
+      // Jika 0, minus, atau kosong, set harga jadi 0
       setPrice(0);
     }
   }, [weight]);
 
+  // 3. FUNGSI SUBMIT (DIPERKETAT)
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); // Mencegah reload halaman
     
-    // 1. Validasi Input Kosong
+    // --- VALIDASI TAHAP 1: KELENGKAPAN DATA ---
     if (!selectedOutlet || !weight) {
-      alert("Mohon lengkapi semua data!");
+      alert("Mohon lengkapi Outlet dan Berat cucian!");
       return;
     }
 
-    // 2. VALIDASI BARU: Cek Angka 0 atau Negatif
+    // --- VALIDASI TAHAP 2: ANGKA NOL ATAU MINUS ---
     const weightValue = parseFloat(weight);
 
-    if (weightValue <= 0) {
-      alert("Berat cucian tidak boleh 0 atau negatif! Harap masukkan berat yang benar.");
-      return; // Stop, jangan kirim ke database
+    // Cek jika: Tidak Angka (NaN) ATAU Kurang dari atau sama dengan 0
+    if (isNaN(weightValue) || weightValue <= 0) {
+      alert("⛔ ERROR: Berat cucian tidak valid! \nHarap masukkan angka lebih besar dari 0 (misal: 1, 2.5, dst).");
+      setPrice(0); // Reset harga visual
+      return; // <--- STOP DI SINI! JANGAN LANJUT KE BAWAH
     }
 
+    // Jika lolos validasi, baru nyalakan loading
     setLoading(true);
 
     const newOrder = {
       user_name: userName,
       outlet_id: selectedOutlet,
       weight: weightValue,
-      price: price,
+      price: weightValue * PRICE_PER_KG, // Hitung ulang biar aman
       status: "Menunggu Pickup"
     };
 
@@ -76,14 +83,14 @@ export default function CreateOrder() {
       });
 
       if (response.ok) {
-        alert("Pesanan berhasil dibuat!");
+        alert("✅ Pesanan BERHASIL dibuat!");
         navigate("/orders");
       } else {
         const errData = await response.json();
-        alert("Gagal membuat pesanan: " + (errData.error || "Unknown error"));
+        alert("❌ Gagal: " + (errData.error || "Terjadi kesalahan server"));
       }
     } catch (error) {
-      alert("Terjadi kesalahan koneksi.");
+      alert("❌ Error Koneksi: Pastikan internet lancar.");
     } finally {
       setLoading(false);
     }
@@ -132,16 +139,23 @@ export default function CreateOrder() {
             <label className="block text-sm font-bold text-gray-700 mb-2">Perkiraan Berat (Kg)</label>
             <input 
               type="number" 
-              placeholder="Contoh: 3"
+              placeholder="Min. 1 Kg"
               value={weight}
-              // Tambahkan min="1" agar browser juga membantu membatasi
-              min="1"
+              // VALIDASI HTML: Mencegah input minus dari keyboard/tombol panah
+              min="0.1" 
+              step="0.1"
+              onKeyDown={(e) => {
+                // Mencegah ketik tanda minus (-) secara manual
+                if(e.key === '-' || e.key === 'e') e.preventDefault();
+              }}
               onChange={(e) => setWeight(e.target.value)}
               className="w-full border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
             />
-             {/* Pesan error kecil jika user mengetik 0 (opsional, visual feedback) */}
+             {/* Feedback Visual Merah jika user memaksa input 0 */}
              {weight !== "" && parseFloat(weight) <= 0 && (
-                <p className="text-xs text-red-500 mt-1 font-bold">⚠️ Berat tidak valid (minimal 1 Kg)</p>
+                <p className="text-xs text-red-600 mt-2 font-bold bg-red-50 p-2 rounded-lg border border-red-200">
+                  ⚠️ Berat tidak valid! Masukkan angka positif.
+                </p>
              )}
           </div>
 
@@ -152,8 +166,12 @@ export default function CreateOrder() {
 
           <button 
             type="submit" 
-            disabled={loading}
-            className={`w-full p-4 rounded-xl text-white font-bold shadow-lg transition transform active:scale-95 ${loading ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700 shadow-blue-200'}`}
+            // Matikan tombol jika loading ATAU berat <= 0
+            disabled={loading || parseFloat(weight) <= 0}
+            className={`w-full p-4 rounded-xl text-white font-bold shadow-lg transition transform active:scale-95 
+              ${(loading || parseFloat(weight) <= 0) 
+                ? 'bg-gray-400 cursor-not-allowed' 
+                : 'bg-blue-600 hover:bg-blue-700 shadow-blue-200'}`}
           >
             {loading ? "Memproses..." : "Kirim Pesanan Sekarang 🚀"}
           </button>

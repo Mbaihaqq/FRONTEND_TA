@@ -5,7 +5,6 @@ import { API_BASE_URL } from "../config";
 export default function CreateOrder() {
   const navigate = useNavigate();
   
-  
   const [userName, setUserName] = useState(""); 
   const [outlets, setOutlets] = useState([]);
   const [selectedOutlet, setSelectedOutlet] = useState("");
@@ -13,33 +12,30 @@ export default function CreateOrder() {
   const [price, setPrice] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  
   const PRICE_PER_KG = 5000;
 
- 
   useEffect(() => {
     const storedName = localStorage.getItem("user_name");
     const role = localStorage.getItem("role");
 
-    
     if (!storedName || role !== "user") {
       alert("Silakan login terlebih dahulu.");
       navigate("/login");
     } else {
-      setUserName(storedName); 
+      setUserName(storedName);
     }
 
-    
     fetch(`${API_BASE_URL}/outlets`)
       .then((res) => res.json())
       .then((data) => setOutlets(data))
       .catch((err) => console.error(err));
   }, []);
 
-  
   useEffect(() => {
-    if (weight) {
-      setPrice(parseInt(weight) * PRICE_PER_KG);
+    // Pastikan hitungan harga tidak minus saat diketik
+    const w = parseFloat(weight);
+    if (w > 0) {
+      setPrice(w * PRICE_PER_KG);
     } else {
       setPrice(0);
     }
@@ -48,17 +44,26 @@ export default function CreateOrder() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    // 1. Validasi Input Kosong
     if (!selectedOutlet || !weight) {
       alert("Mohon lengkapi semua data!");
       return;
     }
 
+    // 2. VALIDASI BARU: Cek Angka 0 atau Negatif
+    const weightValue = parseFloat(weight);
+
+    if (weightValue <= 0) {
+      alert("Berat cucian tidak boleh 0 atau negatif! Harap masukkan berat yang benar.");
+      return; // Stop, jangan kirim ke database
+    }
+
     setLoading(true);
 
     const newOrder = {
-      user_name: userName, 
+      user_name: userName,
       outlet_id: selectedOutlet,
-      weight: parseFloat(weight),
+      weight: weightValue,
       price: price,
       status: "Menunggu Pickup"
     };
@@ -72,7 +77,7 @@ export default function CreateOrder() {
 
       if (response.ok) {
         alert("Pesanan berhasil dibuat!");
-        navigate("/orders"); 
+        navigate("/orders");
       } else {
         const errData = await response.json();
         alert("Gagal membuat pesanan: " + (errData.error || "Unknown error"));
@@ -107,7 +112,6 @@ export default function CreateOrder() {
             <p className="text-[10px] text-gray-400 mt-1">*Sesuai akun yang login</p>
           </div>
 
-          
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-2">Pilih Outlet</label>
             <select 
@@ -124,31 +128,34 @@ export default function CreateOrder() {
             </select>
           </div>
 
-          
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-2">Perkiraan Berat (Kg)</label>
             <input 
               type="number" 
               placeholder="Contoh: 3"
               value={weight}
+              // Tambahkan min="1" agar browser juga membantu membatasi
+              min="1"
               onChange={(e) => setWeight(e.target.value)}
               className="w-full border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
             />
+             {/* Pesan error kecil jika user mengetik 0 (opsional, visual feedback) */}
+             {weight !== "" && parseFloat(weight) <= 0 && (
+                <p className="text-xs text-red-500 mt-1 font-bold">⚠️ Berat tidak valid (minimal 1 Kg)</p>
+             )}
           </div>
 
-          
           <div className="bg-blue-50 p-4 rounded-xl flex justify-between items-center border border-blue-100">
             <span className="text-sm text-blue-800 font-medium">Estimasi Biaya</span>
             <span className="text-xl font-bold text-blue-700">Rp {price.toLocaleString()}</span>
           </div>
 
-          
           <button 
             type="submit" 
             disabled={loading}
             className={`w-full p-4 rounded-xl text-white font-bold shadow-lg transition transform active:scale-95 ${loading ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700 shadow-blue-200'}`}
           >
-            {loading ? "Memproses..." : "Kirim Pesanan Sekarang"}
+            {loading ? "Memproses..." : "Kirim Pesanan Sekarang 🚀"}
           </button>
 
         </form>

@@ -1,36 +1,37 @@
 import { useEffect, useState } from "react";
-import OutletCard from "../components/OutletCard";
-import Skeleton from "../components/Skeleton";
-import { API_BASE_URL } from "../config"; // Pastikan path import benar
+import { Link } from "react-router-dom";
+import { API_BASE_URL } from "../config"; // Import Config
 
 export default function Outlets() {
   const [outlets, setOutlets] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/outlets`)
+    fetch(`${API_BASE_URL}/outlets`) // Panggil API
       .then((res) => res.json())
       .then((data) => {
         setOutlets(data);
         setLoading(false);
       })
-      .catch(err => console.error(err));
+      .catch((err) => console.error("Gagal ambil outlet:", err));
   }, []);
 
-  return (
-    <div className="p-4 pb-24">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Daftar Outlet</h1>
-        {/* Tombol Tambah Outlet (Jika perlu admin) */}
-        <a href="/add-outlet" className="text-blue-600 text-sm font-bold">+ Baru</a>
-      </div>
+  if (loading) return <div className="p-4 text-center">Loading Outlets...</div>;
 
-      {loading ? (
-        // Tampilkan 3 skeleton saat loading
-        [1, 2, 3].map((n) => <Skeleton key={n} className="h-24 w-full mb-3" />)
-      ) : (
-        outlets.map((outlet) => <OutletCard key={outlet.id} outlet={outlet} />)
-      )}
+  return (
+    <div className="p-4 pb-20">
+      <h1 className="text-2xl font-bold mb-4">Mitra Laundry</h1>
+      {outlets.map((outlet) => (
+        <div key={outlet.id} className="bg-white p-4 rounded-xl shadow-sm border mb-3 flex justify-between items-center">
+          <div>
+            <h3 className="font-bold text-lg text-blue-900">{outlet.name}</h3>
+            <p className="text-gray-500 text-sm">{outlet.address}</p>
+          </div>
+          <Link to={`/create-order?outletId=${outlet.id}`} className="bg-blue-600 text-white px-3 py-1 rounded text-sm">
+            Pilih
+          </Link>
+        </div>
+      ))}
     </div>
   );
 }

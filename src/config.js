@@ -1,1 +1,1 @@
-export const API_BASE_URL = "https://ta-ppb-baihaqi-api.vercel.app/";
+export const API_BASE_URL = "https://ta-ppb-baihaqi-api.vercel.app/api";

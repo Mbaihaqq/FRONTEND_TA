@@ -24,7 +24,7 @@ export default function OrderDetail() {
       });
   }, [id]);
 
-  // Helper Format Tanggal
+
   const formatDate = (dateString) => {
     if (!dateString) return "-";
     return new Date(dateString).toLocaleDateString("id-ID", {
@@ -32,7 +32,7 @@ export default function OrderDetail() {
     });
   };
 
-  // Helper Warna Badge Status (Untuk Label di Pojok Kanan Atas)
+  
   const getStatusColor = (status) => {
     if (!status) return "bg-gray-100";
     const s = status.toLowerCase();
@@ -43,21 +43,21 @@ export default function OrderDetail() {
     return "bg-gray-100 text-gray-600";
   };
 
-  // === LOGIC TRACKER BARU (KUNCI PERBAIKAN) ===
+ 
   const getProgressLevel = (status) => {
     if (!status) return 1;
     const s = status.toLowerCase();
     
-    // Level 4: Selesai
+    
     if (s.includes("selesai")) return 4;
     
-    // Level 3: Proses Pencucian (Cocokkan dengan teks di Admin)
+   
     if (s.includes("proses") || s.includes("cuci")) return 3;
     
-    // Level 2: Sedang Dijemput (Cocokkan dengan teks di Admin)
+    
     if (s.includes("sedang") || s.includes("jemput")) return 2;
     
-    // Level 1: Default (Menunggu Pickup)
+    
     return 1;
   };
 
@@ -69,7 +69,7 @@ export default function OrderDetail() {
   return (
     <div className="p-4 pb-24 bg-gray-50 min-h-screen">
       
-      {/* Header Back */}
+     
       <div className="flex items-center mb-6 pt-4">
         <button onClick={() => navigate(-1)} className="mr-3 p-2 bg-white rounded-full shadow-sm">
           <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
@@ -77,7 +77,7 @@ export default function OrderDetail() {
         <h1 className="text-xl font-bold text-gray-800">Detail Pesanan</h1>
       </div>
 
-      {/* Kartu Status Utama */}
+      
       <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-4">
         <div className="flex justify-between items-start mb-4">
             <div>
@@ -105,13 +105,13 @@ export default function OrderDetail() {
         </div>
       </div>
 
-      {/* Rincian Laundry */}
+     
       <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-4">
         <h3 className="font-bold text-gray-800 mb-4 text-sm uppercase tracking-wide">Rincian Laundry</h3>
         <div className="space-y-3">
             <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Outlet</span>
-                {/* Perbaikan: Mengambil nama outlet dari relasi tabel */}
+                
                 <span className="font-medium text-gray-800 text-right w-1/2 truncate">
                   {order.laundry_outlets?.name || "Outlet Tidak Ditemukan"}
                 </span>
@@ -131,33 +131,33 @@ export default function OrderDetail() {
         </div>
       </div>
 
-      {/* Status Tracker (Timeline) */}
+      
       <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
         <h3 className="font-bold text-gray-800 mb-6 text-sm uppercase tracking-wide">Status Tracker</h3>
         <div className="relative pl-4 border-l-2 border-gray-200 space-y-8">
             
-            {/* Step 1: Pesanan Dibuat */}
+           
             <div className="relative">
                 <div className="absolute -left-[21px] w-4 h-4 rounded-full bg-blue-500 border-2 border-white ring-2 ring-blue-100"></div>
                 <h4 className="text-sm font-bold text-gray-800">Pesanan Dibuat</h4>
                 <p className="text-xs text-gray-500">Pesanan telah diterima sistem.</p>
             </div>
 
-            {/* Step 2: Dijemput Kurir */}
+           
             <div className="relative">
                 <div className={`absolute -left-[21px] w-4 h-4 rounded-full border-2 border-white ${progress >= 2 ? 'bg-blue-500 ring-2 ring-blue-100' : 'bg-gray-300'}`}></div>
                 <h4 className={`text-sm font-bold ${progress >= 2 ? 'text-gray-800' : 'text-gray-400'}`}>Dijemput Kurir</h4>
                 <p className="text-xs text-gray-500">Kurir menuju lokasi Anda.</p>
             </div>
 
-            {/* Step 3: Proses Pencucian */}
+          
             <div className="relative">
                 <div className={`absolute -left-[21px] w-4 h-4 rounded-full border-2 border-white ${progress >= 3 ? 'bg-blue-500 ring-2 ring-blue-100' : 'bg-gray-300'}`}></div>
                 <h4 className={`text-sm font-bold ${progress >= 3 ? 'text-gray-800' : 'text-gray-400'}`}>Proses Pencucian</h4>
                 <p className="text-xs text-gray-500">Pakaian sedang dicuci & setrika.</p>
             </div>
 
-            {/* Step 4: Selesai */}
+            
             <div className="relative">
                 <div className={`absolute -left-[21px] w-4 h-4 rounded-full border-2 border-white ${progress >= 4 ? 'bg-green-500 ring-2 ring-green-100' : 'bg-gray-300'}`}></div>
                 <h4 className={`text-sm font-bold ${progress >= 4 ? 'text-gray-800' : 'text-gray-400'}`}>Selesai</h4>

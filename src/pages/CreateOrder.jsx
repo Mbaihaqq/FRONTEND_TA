@@ -14,7 +14,7 @@ export default function CreateOrder() {
 
   const PRICE_PER_KG = 5000;
 
-  // 1. Cek Login & Load Outlet
+ 
   useEffect(() => {
     const storedName = localStorage.getItem("user_name");
     const role = localStorage.getItem("role");
@@ -32,10 +32,10 @@ export default function CreateOrder() {
       .catch((err) => console.error(err));
   }, []);
 
-  // 2. Hitung Harga Real-time
+  
   useEffect(() => {
     const w = parseFloat(weight);
-    // Harga hanya dihitung jika berat >= 1
+
     if (!isNaN(w) && w >= 1) {
       setPrice(w * PRICE_PER_KG);
     } else {
@@ -43,7 +43,7 @@ export default function CreateOrder() {
     }
   }, [weight]);
 
-  // 3. FUNGSI SUBMIT (VALIDASI KETAT MINIMAL 1 KG)
+  
   const handleSubmit = async (e) => {
     e.preventDefault(); 
     
@@ -54,8 +54,7 @@ export default function CreateOrder() {
 
     const weightValue = parseFloat(weight);
 
-    // --- PERUBAHAN DI SINI: VALIDASI < 1 ---
-    // Jika angka kurang dari 1 (misal 0.1, 0.9), tolak!
+  
     if (isNaN(weightValue) || weightValue < 1) {
       alert("⛔ ERROR: Berat cucian minimal 1 Kg!");
       setPrice(0); 
@@ -93,10 +92,10 @@ export default function CreateOrder() {
     }
   };
 
-  // Helper untuk cek validitas input di tombol disable
+ 
   const isInvalidWeight = () => {
     const w = parseFloat(weight);
-    return isNaN(w) || w < 1; // True jika kosong, error, atau dibawah 1
+    return isNaN(w) || w < 1; 
   };
 
   return (
@@ -143,17 +142,16 @@ export default function CreateOrder() {
               type="number" 
               placeholder="Min. 1 Kg"
               value={weight}
-              // PERUBAHAN DI SINI: min="1"
               min="1" 
               step="0.1"
               onKeyDown={(e) => {
-                // Cegah tombol minus
+              
                 if(e.key === '-' || e.key === 'e') e.preventDefault();
               }}
               onChange={(e) => setWeight(e.target.value)}
               className="w-full border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
             />
-             {/* Pesan Error Merah jika < 1 */}
+             
              {weight !== "" && parseFloat(weight) < 1 && (
                 <p className="text-xs text-red-600 mt-2 font-bold bg-red-50 p-2 rounded-lg border border-red-200">
                   ⚠️ Minimal berat laundry adalah 1 Kg.
@@ -168,14 +166,14 @@ export default function CreateOrder() {
 
           <button 
             type="submit" 
-            // Matikan tombol jika berat kurang dari 1
+            
             disabled={loading || isInvalidWeight()}
             className={`w-full p-4 rounded-xl text-white font-bold shadow-lg transition transform active:scale-95 
               ${(loading || isInvalidWeight()) 
                 ? 'bg-gray-400 cursor-not-allowed' 
                 : 'bg-blue-600 hover:bg-blue-700 shadow-blue-200'}`}
           >
-            {loading ? "Memproses..." : "Kirim Pesanan Sekarang 🚀"}
+            {loading ? "Memproses..." : "Kirim Pesanan Sekarang "}
           </button>
 
         </form>

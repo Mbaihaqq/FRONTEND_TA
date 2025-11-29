@@ -10,13 +10,13 @@ export default function CreateOrder() {
   const [outlets, setOutlets] = useState([]);
   const [formData, setFormData] = useState({
     outlet_id: preSelectedOutlet || "",
-    user_name: "Baihaqi", // Bisa diganti input
+    user_name: "Baihaqi", 
     weight: "",
     price: 0,
     status: "Menunggu Pickup"
   });
 
-  // Load Outlet untuk Dropdown
+
   useEffect(() => {
     fetch(`${API_BASE_URL}/outlets`)
       .then(res => res.json())
@@ -48,7 +48,7 @@ export default function CreateOrder() {
       <h1 className="text-xl font-bold mb-6">Buat Pesanan</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         
-        {/* Pilih Outlet */}
+       
         <div>
           <label className="block text-sm font-bold mb-1">Pilih Laundry</label>
           <select 
@@ -64,7 +64,7 @@ export default function CreateOrder() {
           </select>
         </div>
 
-        {/* Berat */}
+     
         <div>
            <label className="block text-sm font-bold mb-1">Estimasi Berat (Kg)</label>
            <input 
@@ -73,12 +73,12 @@ export default function CreateOrder() {
              onChange={(e) => setFormData({
                ...formData, 
                weight: e.target.value,
-               price: e.target.value * 5000 // Contoh logika harga otomatis
+               price: e.target.value * 5000 
              })}
            />
         </div>
 
-        {/* Harga (Otomatis) */}
+     
         <div className="bg-gray-100 p-3 rounded-lg flex justify-between">
            <span>Estimasi Harga:</span>
            <span className="font-bold text-green-600">Rp {formData.price}</span>

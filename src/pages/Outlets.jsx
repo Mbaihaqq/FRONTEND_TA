@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { API_BASE_URL } from "../config"; // Import Config
+import { API_BASE_URL } from "../config"; 
 
 export default function Outlets() {
   const [outlets, setOutlets] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/outlets`) // Panggil API
+    fetch(`${API_BASE_URL}/outlets`) 
       .then((res) => res.json())
       .then((data) => {
         setOutlets(data);

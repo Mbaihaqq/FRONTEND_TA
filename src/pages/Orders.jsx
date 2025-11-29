@@ -1,47 +1,37 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { API_BASE_URL } from "../config"; // Pastikan path ini benar
+import { API_BASE_URL } from "../config"; 
 
 export default function Orders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState(null);
-  const [updatingId, setUpdatingId] = useState(null); // Untuk loading spinner saat update
 
-  // 1. FUNGSI FETCH DATA (Logika Debugging Anda tetap dipakai)
+  
   const fetchOrders = () => {
     setLoading(true);
-    console.log("Fetching ke:", `${API_BASE_URL}/orders`);
-
     fetch(`${API_BASE_URL}/orders`)
       .then(async (res) => {
         const text = await res.text();
-        // console.log("RESPONSE ASLI:", text); // Uncomment jika ingin debug
-
-        if (!res.ok) {
-          throw new Error(`Server Error: ${res.status} - ${text}`);
-        }
-
+        if (!res.ok) throw new Error(text);
         try {
           return JSON.parse(text);
         } catch (e) {
-          throw new Error("Backend mengirim HTML, bukan JSON. Cek URL API.");
+          throw new Error("Format data backend bukan JSON.");
         }
       })
       .then((data) => {
         if (Array.isArray(data)) {
-          // Sort agar order terbaru muncul di atas
-          const sorted = data.sort((a, b) => new Date(b.pickup_date) - new Date(a.pickup_date));
-          setOrders(sorted);
+          const sortedData = data.sort((a, b) => new Date(b.pickup_date) - new Date(a.pickup_date));
+          setOrders(sortedData);
         } else {
           setOrders([]);
-          console.error("Data bukan array:", data);
         }
         setLoading(false);
       })
       .catch((err) => {
-        console.error("FETCH ERROR:", err);
-        setErrorMsg(err.message);
+        console.error("Error Fetching Orders:", err);
+        setErrorMsg("Gagal memuat data. Pastikan backend aktif.");
         setLoading(false);
       });
   };
@@ -50,114 +40,117 @@ export default function Orders() {
     fetchOrders();
   }, []);
 
-  // 2. FUNGSI UPDATE STATUS (Logika Baru)
-  const handleUpdateStatus = async (id, newStatus) => {
-    setUpdatingId(id); // Nyalakan loading di kartu spesifik
-    
+  const safeDate = (dateString) => {
+    if (!dateString) return "-"; 
     try {
-      const res = await fetch(`${API_BASE_URL}/orders/${id}`, {
-        method: "PUT", // Method PUT untuk update
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ status: newStatus }),
+      return new Date(dateString).toLocaleDateString("id-ID", {
+        day: 'numeric', month: 'short'
       });
-
-      if (!res.ok) throw new Error("Gagal update status");
-
-      // Jika sukses, update state lokal langsung (biar cepat/snappy)
-      setOrders(prevOrders => 
-        prevOrders.map(order => 
-          order.id === id ? { ...order, status: newStatus } : order
-        )
-      );
-      
-      alert(`Status berhasil diubah ke: ${newStatus}`);
-
-    } catch (error) {
-      alert("Gagal mengubah status: " + error.message);
-    } finally {
-      setUpdatingId(null); // Matikan loading
+    } catch (e) {
+      return "-";
     }
   };
 
-  // Helper warna badge status
+  
+  const safePrice = (price) => {
+    if (!price) return "0";
+    return parseInt(price).toLocaleString("id-ID");
+  };
+
+  
   const getStatusColor = (status) => {
-    switch (status) {
-      case "Menunggu Pickup": return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case "Sedang Dijemput": return "bg-orange-100 text-orange-800 border-orange-200";
-      case "Proses Pencucian": return "bg-blue-100 text-blue-800 border-blue-200";
-      case "Selesai": return "bg-green-100 text-green-800 border-green-200";
-      default: return "bg-gray-100 text-gray-800";
-    }
+    const s = status ? status.toLowerCase() : "";
+    if (s.includes("menunggu")) return "bg-yellow-100 text-yellow-800 border-yellow-200";
+    if (s.includes("sedang")) return "bg-orange-100 text-orange-800 border-orange-200";
+    if (s.includes("proses")) return "bg-blue-100 text-blue-800 border-blue-200";
+    if (s.includes("selesai")) return "bg-green-100 text-green-800 border-green-200";
+    return "bg-gray-100 text-gray-800 border-gray-200";
   };
+
+  
+  if (loading) return <div className="p-8 text-center text-gray-500 pt-20">Sedang memuat pesanan...</div>;
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24 p-4">
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Daftar Pesanan</h1>
-        <p className="text-sm text-gray-500">Kelola status laundry di sini</p>
+      
+     
+      <div className="mb-5 flex justify-between items-end">
+        <div>
+          <h1 className="text-xl font-bold text-gray-800">Riwayat Pesanan</h1>
+          <p className="text-xs text-gray-500">Pantau cucianmu di sini</p>
+        </div>
       </div>
 
-      {/* State: Loading & Error */}
-      {loading && <div className="text-center py-10">Loading data...</div>}
-      {errorMsg && <div className="bg-red-100 text-red-600 p-4 rounded-lg mb-4">{errorMsg}</div>}
+      
+      {errorMsg && (
+        <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm mb-4 border border-red-100 shadow-sm">
+          ⚠️ {errorMsg}
+        </div>
+      )}
 
-      {/* List Orders */}
+      
+      {orders.length === 0 && !loading && !errorMsg && (
+        <div className="text-center py-16 flex flex-col items-center">
+          <div className="bg-gray-100 p-4 rounded-full mb-3">
+            <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
+          </div>
+          <p className="text-gray-500 font-medium">Belum ada pesanan.</p>
+          <p className="text-gray-400 text-xs mb-4">Cucian numpuk? Yuk order sekarang!</p>
+          <Link to="/create-order" className="bg-blue-600 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition">
+            Buat Pesanan Baru
+          </Link>
+        </div>
+      )}
+
+      
       <div className="space-y-4">
-        {!loading && orders.length === 0 && <p>Belum ada pesanan.</p>}
-
         {orders.map((order) => (
-          <div key={order.id} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 relative">
+          <div key={order.id} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition duration-300">
             
-            {/* Bagian Atas: Info User */}
-            <div className="flex justify-between items-start mb-3">
+            
+            <div className="flex justify-between items-start mb-3 border-b border-gray-50 pb-2">
               <div>
-                <h3 className="font-bold text-gray-800 text-lg">{order.user_name || "User"}</h3>
-                <Link to={`/order/${order.id}`} className="text-xs text-blue-500 hover:underline">
-                  #{order.id.slice(0, 8)}... (Lihat Detail)
-                </Link>
+                <h3 className="font-bold text-gray-800 text-lg">{order.user_name || "Tanpa Nama"}</h3>
+                <p className="text-[10px] text-gray-400 font-mono">
+                  ID: #{order.id ? order.id.substring(0, 8) : "UNK"}
+                </p>
               </div>
-              <div className={`px-2 py-1 rounded-full text-[10px] font-bold border ${getStatusColor(order.status)}`}>
-                {order.status}
-              </div>
-            </div>
-
-            {/* Bagian Tengah: Info Laundry */}
-            <div className="bg-gray-50 p-3 rounded-xl text-sm text-gray-600 mb-4">
-              <div className="flex justify-between">
-                <span>Berat:</span> <span className="font-medium">{order.weight} Kg</span>
-              </div>
-              <div className="flex justify-between mt-1">
-                <span>Total:</span> <span className="font-bold text-blue-600">Rp {parseInt(order.price).toLocaleString()}</span>
+              
+              <div className={`px-3 py-1 rounded-full text-[10px] font-bold border ${getStatusColor(order.status)}`}>
+                {order.status || "Menunggu"}
               </div>
             </div>
 
-            {/* Bagian Bawah: DROPDOWN UBAH STATUS */}
-            <div className="pt-3 border-t border-gray-100">
-              <label className="text-xs font-bold text-gray-400 uppercase mb-1 block">Ubah Status:</label>
+            
+            <div className="space-y-2 text-sm">
+              
+              
+              <div className="flex items-start gap-2">
+                <svg className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                <span className="text-gray-600 truncate">
+                  {order.laundry_outlets?.name || "Lokasi outlet tidak tersedia"}
+                </span>
+              </div>
+
+            
               <div className="flex items-center gap-2">
-                <select
-                  value={order.status}
-                  disabled={updatingId === order.id}
-                  onChange={(e) => handleUpdateStatus(order.id, e.target.value)}
-                  className="w-full bg-white border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5"
-                >
-                  <option value="Menunggu Pickup">Menunggu Pickup</option>
-                  <option value="Sedang Dijemput">Sedang Dijemput</option>
-                  <option value="Proses Pencucian">Proses Pencucian</option>
-                  <option value="Selesai">Selesai</option>
-                </select>
-                
-                {/* Loading Spinner Kecil saat update */}
-                {updatingId === order.id && (
-                  <svg className="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                )}
+                <svg className="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                <div className="flex flex-col">
+                   <span className="text-xs text-gray-400">Estimasi Selesai:</span>
+                   <span className={`font-semibold ${order.finish_date ? 'text-blue-600' : 'text-gray-400 italic'}`}>
+                     {safeDate(order.finish_date)}
+                   </span>
+                </div>
               </div>
+
+            </div>
+
+           
+            <div className="mt-4 pt-3 border-t border-gray-100 flex justify-between items-center">
+              <span className="text-xs text-gray-500">Total Biaya</span>
+              <span className="text-lg font-bold text-gray-800">
+                Rp {safePrice(order.price)}
+              </span>
             </div>
 
           </div>

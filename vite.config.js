@@ -6,12 +6,12 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',   // Service worker auto update
+      registerType: 'autoUpdate',   
       manifest: {
         name: "Aplikasi Laundry Baihaqi",
         short_name: "Laundry",
         description: "Aplikasi Laundry PWA untuk Tugas Pemrograman Perangkat Bergerak",
-        theme_color: "#1d4ed8",     // Biru Tailwind
+        theme_color: "#1d4ed8",     
         background_color: "#ffffff",
         start_url: "/",
         display: "standalone",

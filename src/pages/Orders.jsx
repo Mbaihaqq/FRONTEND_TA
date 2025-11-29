@@ -8,26 +8,41 @@ export default function Orders() {
   const [errorMsg, setErrorMsg] = useState(null);
 
   useEffect(() => {
-    // Menggunakan API_BASE_URL dari config
-    fetch(`${API_BASE_URL}/orders`)
-      .then((res) => {
-        if (!res.ok) throw new Error("Gagal mengambil data");
-        return res.json();
-      })
-      .then((data) => {
-        if (Array.isArray(data)) {
-          setOrders(data);
-        } else {
-          setOrders([]);
-        }
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setErrorMsg("Backend Error / Belum Deploy");
-        setLoading(false);
-      });
-  }, []);
+  console.log("Fetching ke:", `${API_BASE_URL}/orders`);
+
+  fetch(`${API_BASE_URL}/orders`)
+    .then(async (res) => {
+      // 1. Ambil responsenya sebagai TEXT dulu (bukan JSON)
+      const text = await res.text();
+      console.log("RESPONSE ASLI DARI BACKEND:", text); // <--- LIHAT INI DI CONSOLE
+
+      // 2. Cek apakah statusnya error?
+      if (!res.ok) {
+        throw new Error(`Server Error: ${res.status} - ${text}`);
+      }
+
+      // 3. Coba ubah text jadi JSON manual
+      try {
+        return JSON.parse(text);
+      } catch (e) {
+        throw new Error("Backend mengirim HTML, bukan JSON. Cek URL API.");
+      }
+    })
+    .then((data) => {
+      if (Array.isArray(data)) {
+        setOrders(data);
+      } else {
+        setOrders([]);
+        console.error("Data bukan array:", data);
+      }
+      setLoading(false);
+    })
+    .catch((err) => {
+      console.error("FETCH ERROR:", err);
+      setErrorMsg(err.message); // Tampilkan pesan error di layar HP
+      setLoading(false);
+    });
+}, []);
 
   // ... (Sisa kode return JSX tampilan Anda) ...
   // Gunakan kode Orders.jsx lengkap yang saya berikan di jawaban sebelumnya

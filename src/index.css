@@ -2,24 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Settingan Global Dasar */
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 }
 
-/* Hapus margin bawaan browser dan set background default */
 body {
   margin: 0;
   padding: 0;
   width: 100%;
   min-height: 100vh;
-  background-color: #f9fafb; /* Warna abu-abu muda (gray-50) */
-  color: #1f2937; /* Warna teks standar */
+  background-color: #f9fafb; 
+  color: #1f2937; 
 }
 
-/* Scrollbar Kustom (Opsional: Agar lebih cantik di Chrome/Edge) */
 ::-webkit-scrollbar {
   width: 8px;
 }

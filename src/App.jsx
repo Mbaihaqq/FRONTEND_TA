@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 
-// Import Halaman
+
 import Home from "./pages/Home";
 import Orders from "./pages/Orders";
 import CreateOrder from "./pages/CreateOrder";
@@ -9,37 +9,36 @@ import About from "./pages/About";
 import Admin from "./pages/Admin";
 import OrderDetail from "./pages/OrderDetail";
 
-// Import Login
+
 import LoginUser from "./pages/LoginUser";
 import LoginAdmin from "./pages/LoginAdmin";
 
-// Import Navigasi
-import BottomNav from "./components/BottomNav";
-import Sidebar from "./components/Sidebar"; // <--- Import Sidebar Baru
 
-// --- LAYOUT CONTROLLER ---
+import BottomNav from "./components/BottomNav";
+import Sidebar from "./components/Sidebar"; 
+
+
 function Layout({ children }) {
   const location = useLocation();
   
-  // Halaman yang tidak butuh navigasi sama sekali (Login)
+  
   const isLoginPage = ["/login", "/admin-login"].includes(location.pathname);
 
   return (
     <div className="flex min-h-screen bg-gray-50 font-sans">
       
-      {/* 1. SIDEBAR (Hanya muncul di Desktop 'md:block', sembunyi di Mobile 'hidden') */}
+      
       {!isLoginPage && <Sidebar />}
 
-      {/* 2. KONTEN UTAMA */}
-      {/* md:ml-64 artinya: di desktop, geser konten ke kanan 64 unit (karena ada sidebar) */}
+      
       <main className={`flex-1 w-full ${!isLoginPage ? 'md:ml-64' : ''}`}>
         
-        {/* Container Pembatas Lebar (Agar konten tidak terlalu lebar di layar raksasa) */}
+        
         <div className="max-w-4xl mx-auto min-h-screen relative">
           {children}
         </div>
 
-        {/* 3. BOTTOM NAV (Hanya muncul di Mobile, sembunyi di Desktop 'md:hidden') */}
+        
         {!isLoginPage && (
           <div className="md:hidden">
             <BottomNav />

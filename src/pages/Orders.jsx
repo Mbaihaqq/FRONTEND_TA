@@ -13,7 +13,7 @@ export default function Orders() {
     const name = localStorage.getItem("user_name");
     const role = localStorage.getItem("role");
 
-    // Cek Login
+    
     if (!name || role !== "user") {
       navigate("/login");
     } else {
@@ -36,13 +36,12 @@ export default function Orders() {
       })
       .then((data) => {
         if (Array.isArray(data)) {
-          // Filter hanya pesanan milik user yang login
           const myOrders = data.filter((order) => 
             order.user_name && 
             order.user_name.toLowerCase() === loggedInName.toLowerCase()
           );
           
-          // Sort dari yang terbaru
+          
           const sortedData = myOrders.sort((a, b) => new Date(b.pickup_date) - new Date(a.pickup_date));
           setOrders(sortedData);
         } else {
@@ -81,10 +80,9 @@ export default function Orders() {
   if (loading) return <div className="p-8 text-center text-gray-500 pt-20">Memuat pesanan...</div>;
 
   return (
-    // RESPONSIVE PADDING: pb-24 untuk mobile (ruang navbar), md:pb-10 untuk desktop
     <div className="min-h-screen bg-gray-50 pb-24 md:pb-10 p-4 md:p-8">
       
-      {/* Header */}
+    
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Riwayat Pesanan</h1>
         <p className="text-sm text-gray-500">
@@ -110,15 +108,12 @@ export default function Orders() {
         </div>
       )}
 
-      {/* LAYOUT GRID RESPONSIVE:
-          - Mobile (default): 1 Kolom (grid-cols-1)
-          - Desktop (md): 2 Kolom (md:grid-cols-2)
-      */}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {orders.map((order) => (
           <Link to={`/order/${order.id}`} key={order.id} className="block group">
             
-            {/* Kartu Pesanan dengan Hover Effect */}
+            
             <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition duration-300 group-hover:border-blue-200 h-full flex flex-col justify-between">
               
               <div>

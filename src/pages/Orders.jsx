@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { API_BASE_URL } from "../config"; 
+import { supabase } from "../config"; // ⚠️ Ganti import API_BASE_URL jadi supabase
 
 export default function Orders() {
   const navigate = useNavigate();
@@ -13,7 +13,7 @@ export default function Orders() {
     const name = localStorage.getItem("user_name");
     const role = localStorage.getItem("role");
 
-    
+    // Cek apakah user sudah login
     if (!name || role !== "user") {
       navigate("/login");
     } else {
@@ -22,40 +22,36 @@ export default function Orders() {
     }
   }, []);
 
-  const fetchOrders = (loggedInName) => {
+  const fetchOrders = async (loggedInName) => {
     setLoading(true);
-    fetch(`${API_BASE_URL}/orders`)
-      .then(async (res) => {
-        const text = await res.text();
-        if (!res.ok) throw new Error(text);
-        try {
-          return JSON.parse(text);
-        } catch (e) {
-          throw new Error("Format data backend bukan JSON.");
-        }
-      })
-      .then((data) => {
-        if (Array.isArray(data)) {
-          const myOrders = data.filter((order) => 
-            order.user_name && 
-            order.user_name.toLowerCase() === loggedInName.toLowerCase()
-          );
-          
-          
-          const sortedData = myOrders.sort((a, b) => new Date(b.pickup_date) - new Date(a.pickup_date));
-          setOrders(sortedData);
-        } else {
-          setOrders([]);
-        }
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setErrorMsg("Gagal memuat data.");
-        setLoading(false);
-      });
+    setErrorMsg(null);
+
+    try {
+      // 🔍 QUERY SUPABASE (PENGGANTI FETCH API LAMA)
+      const { data, error } = await supabase
+        .from('orders')
+        // Select semua kolom, DAN coba ambil nama outlet (jika relasi foreign key sudah diset)
+        .select('*, laundry_outlets(name)') 
+        
+        // 🔒 KUNCI: Filter ini CASE SENSITIVE
+        // "Baihaqi" tidak akan mengambil data "baihaqi"
+        .eq('user_name', loggedInName) 
+        
+        .order('pickup_date', { ascending: false });
+
+      if (error) throw error;
+
+      setOrders(data || []);
+      
+    } catch (err) {
+      console.error("Error fetching orders:", err);
+      setErrorMsg("Gagal memuat data dari database.");
+    } finally {
+      setLoading(false);
+    }
   };
 
+  // --- HELPER FUNCTIONS (TIDAK BERUBAH DARI KODE LAMA) ---
   const safeDate = (dateString) => {
     if (!dateString) return "-"; 
     try {
@@ -82,7 +78,6 @@ export default function Orders() {
   return (
     <div className="min-h-screen bg-gray-50 pb-24 md:pb-10 p-4 md:p-8">
       
-    
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Riwayat Pesanan</h1>
         <p className="text-sm text-gray-500">
@@ -108,11 +103,9 @@ export default function Orders() {
         </div>
       )}
 
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {orders.map((order) => (
           <Link to={`/order/${order.id}`} key={order.id} className="block group">
-            
             
             <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition duration-300 group-hover:border-blue-200 h-full flex flex-col justify-between">
               
@@ -130,15 +123,18 @@ export default function Orders() {
                 <div className="space-y-2 text-sm">
                   <div className="flex items-start gap-2">
                     <svg className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                    <span className="text-gray-600 truncate">{order.laundry_outlets?.name || "Lokasi outlet tidak tersedia"}</span>
+                    {/* Cek apakah relasi laundry_outlets ada datanya */}
+                    <span className="text-gray-600 truncate">
+                        {order.laundry_outlets ? order.laundry_outlets.name : (order.outlet_name || "Nama Outlet")}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <svg className="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                     <div className="flex flex-col">
-                       <span className="text-xs text-gray-400">Estimasi Selesai:</span>
-                       <span className={`font-semibold ${order.finish_date ? 'text-blue-600' : 'text-gray-400 italic'}`}>
-                         {safeDate(order.finish_date)}
-                       </span>
+                        <span className="text-xs text-gray-400">Estimasi Selesai:</span>
+                        <span className={`font-semibold ${order.finish_date ? 'text-blue-600' : 'text-gray-400 italic'}`}>
+                          {safeDate(order.finish_date)}
+                        </span>
                     </div>
                   </div>
                 </div>

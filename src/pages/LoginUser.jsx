@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "../../config"; // Import koneksi database
+import { supabase } from "../config"; // Import koneksi database
 
 export default function LoginUser() {
   const [name, setName] = useState("");
